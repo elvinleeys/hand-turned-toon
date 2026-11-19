@@ -2,7 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { isMuted, playSound, setMuted } from '@/lib/audio/sfx';
+import { soundsFor } from '@/scenes/sounds';
 import { subscribe } from '@/lib/events';
 import { attachKeyboard } from '@/lib/input/keyboard';
 import { episode1 } from '@/scenes/data/episode1';
@@ -47,6 +49,18 @@ export default function Story() {
   const [state, dispatch] = useReducer(reduce, undefined, () => initialState(EPISODE, Date.now()));
   const scene = EPISODE.scenes[state.sceneId];
 
+  // 효과음: 상태가 바뀔 때마다 이전 상태와 비교해 낼 소리를 정한다
+  const prevState = useRef(state);
+  useEffect(() => {
+    for (const name of soundsFor(EPISODE, prevState.current, state)) playSound(name);
+    prevState.current = state;
+  }, [state]);
+  const [muted, setMutedState] = useState(isMuted);
+  const toggleMute = () => {
+    setMuted(!muted);
+    setMutedState(!muted);
+  };
+
   // 키보드는 카메라 모드에서도 항상 동작한다 (대체 조작)
   useEffect(() => attachKeyboard(), []);
   useEffect(() => subscribe((event) => dispatch({ type: 'GESTURE', event, at: Date.now() })), []);
@@ -78,7 +92,18 @@ export default function Story() {
           {ORDER.indexOf(state.sceneId) + 1} / {ORDER.length}
         </span>
         <span>{mode === 'camera' ? '손으로 읽는 중' : '키보드·클릭으로 읽는 중'}</span>
-        <SkipButton key={state.sceneId} onSkip={() => dispatch({ type: 'SKIP', at: Date.now() })} />
+        <span className="flex items-center gap-2">
+          <SkipButton key={state.sceneId} onSkip={() => dispatch({ type: 'SKIP', at: Date.now() })} />
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-pressed={muted}
+            aria-label={muted ? '소리 켜기' : '소리 끄기'}
+            className="rounded border border-white/30 px-2 py-1 hover:bg-white/10"
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+        </span>
       </header>
 
       {notice && (

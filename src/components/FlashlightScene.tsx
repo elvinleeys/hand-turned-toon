@@ -45,6 +45,8 @@ export default function FlashlightScene({ scene, state, children }: { scene: Fla
   const onPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     last.current = { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+    // 마우스가 이미 그림 위에 있는 채로 이 장면이 나타나면 pointerenter가 오지 않는다. 움직임으로도 시작한다
+    setPointerInside(true);
     emit({ type: 'PALM_HOLD', ...last.current, source: 'keyboard' });
   };
 

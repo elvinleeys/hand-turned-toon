@@ -11,4 +11,6 @@ export type FrameSample = {
   landmarks: Point[];
   /** 손 중심 기준 3D 좌표(미터). 화면 방향·종횡비 영향을 덜 받는다 */
   world: Point[];
+  /** 화면에 보이는 손 개수. 판정은 첫 번째 손으로만 한다 (예전 기록에는 없음) */
+  hands?: number;
 };

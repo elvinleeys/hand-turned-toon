@@ -25,7 +25,8 @@ export async function createRecognizer(): Promise<GestureRecognizer> {
     GestureRecognizer.createFromOptions(fileset, {
       baseOptions: { modelAssetPath: MODEL_PATH, delegate },
       runningMode: 'VIDEO',
-      numHands: 1,
+      // 판정은 한 손으로만 하지만, 손이 2개 보이면 "한 손만" 안내를 하려고 2개까지 찾는다
+      numHands: 2,
     });
   try {
     return await create('GPU');

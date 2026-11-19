@@ -17,6 +17,7 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [detect] = useState(createCameraGestures);
   const [hasHand, setHasHand] = useState(false);
+  const [twoHands, setTwoHands] = useState(false);
   const [lostLong, setLostLong] = useState(false);
   const lastHandAt = useRef<number | null>(null);
 
@@ -39,6 +40,7 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
     const seen = sample.landmarks.length > 0;
     if (seen || lastHandAt.current === null) lastHandAt.current = sample.t;
     setHasHand(seen);
+    setTwoHands((sample.hands ?? 0) >= 2);
     setLostLong(sample.t - lastHandAt.current > LOST_HINT_MS);
     for (const event of detect(sample)) emit(event);
   });
@@ -58,7 +60,7 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
   return (
     <figure
       className={`fixed right-3 bottom-3 z-20 w-36 overflow-hidden rounded-lg border-4 bg-black transition-colors sm:w-48 ${
-        hasHand ? 'border-amber-400' : 'border-neutral-600'
+        twoHands ? 'border-red-400' : hasHand ? 'border-amber-400' : 'border-neutral-600'
       }`}
     >
       <div className="relative -scale-x-100">
@@ -68,7 +70,9 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
       <figcaption className="bg-black/80 px-2 py-1 text-xs text-white" aria-live="polite">
         {status.kind !== 'running'
           ? describeStatus(status)
-          : hasHand
+          : twoHands
+            ? '손이 2개 보여요. 한 손만 보여주세요'
+            : hasHand
             ? '손 인식 중'
             : lostLong
               ? '손이 안 보여요. 밝은 곳에서 해보거나 아래 버튼·키보드를 써보세요'

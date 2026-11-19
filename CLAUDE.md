@@ -44,6 +44,7 @@ src/
     gestures/           # punch.ts, swipe.ts, palm.ts ... (순수 함수)
     input/              # 키보드·클릭 → GestureEvent
     events.ts           # GestureEvent 타입 + 이벤트 버스
+    audio/sfx.ts        # 효과음 합성(Web Audio), 음소거
   scenes/
     sceneMachine.ts     # 장면 상태 머신
     data/episode1.ts    # 장면 정의 데이터

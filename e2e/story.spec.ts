@@ -129,6 +129,22 @@ test('키보드만으로 손전등을 쓴다 (H를 누른 채 방향키)', async
   await expect(page.getByText('단서 1 / 3')).toBeVisible();
 });
 
+test('효과음이 오류 없이 나고, 음소거는 새로고침 후에도 유지된다', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/story?mode=keyboard');
+  await expect(page.getByText('손바닥을 보여주세요')).toBeVisible();
+  await press(page, 'h'); // 띵
+  await expect(page.getByText('문을 세게 쳐보세요 (0/3)')).toBeVisible();
+  await press(page, ' ', 3); // 쾅 쾅 와장창
+
+  await page.getByRole('button', { name: '소리 끄기' }).click();
+  await expect(page.getByRole('button', { name: '소리 켜기' })).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await expect(page.getByRole('button', { name: '소리 켜기' })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test('안내 버튼을 클릭해도 같은 동작을 한다', async ({ page }) => {
   await page.goto('/story?mode=keyboard');
   await page.getByRole('button', { name: /손바닥을 보여주세요/ }).click();
