@@ -259,7 +259,7 @@ flowchart LR
 - [x] `CLAUDE.md` 기준 폴더·계층 분리
 - [x] `GestureEvent` 타입과 이벤트 버스 구현 (`lib/events.ts`)
 - [x] 키보드 입력 → 같은 이벤트 변환 (`lib/input`)
-- [ ] 장면 상태 머신 + 장면 데이터 (`scenes/`)
+- [x] 장면 상태 머신 + 장면 데이터 (`scenes/`)
 - [ ] S0 인트로, S1 잠긴 문 장면 (문 3단계 이미지 + 흔들림 + 파편)
 
 ### M3 — 3주차 · MVP
