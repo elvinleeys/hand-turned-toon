@@ -103,6 +103,10 @@ describe('S3 손전등', () => {
     expect(play([g('SWIPE_LEFT')], all).sceneId).toBe('S4');
   });
 
+  it('수첩 컷에서는 오른쪽으로 휘둘러도 넘어간다', () => {
+    expect(play([g('SWIPE_RIGHT')], play(FIND_ALL, atS3)).sceneId).toBe('S4');
+  });
+
   it('다 찾기 전에는 휘둘러도 넘어가지 않는다', () => {
     expect(play([g('SWIPE_LEFT')], atS3).sceneId).toBe('S3');
   });

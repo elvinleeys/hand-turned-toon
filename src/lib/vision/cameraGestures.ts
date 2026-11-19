@@ -42,19 +42,21 @@ export function createCameraGestures() {
     punch = p.state;
     if (p.event) events.push(p.event);
 
+    // 손바닥 1초 유지 후에는 손을 펴고 있는 동안 매 프레임 위치를 보낸다 (손전등)
+    palmHold = detectHold(shape, 'open', now, palmHold, HOLD.PALM_HOLD_MS).state;
+    const pointing = palmHold.fired && shape === 'open';
+
     const s = detectSwipe(history, now, swipe);
-    swipe = s.state;
+    // 손전등으로 비추며 움직이다 생긴 휘두르기는 방향을 기억하지 않는다.
+    // 기억하면 다음 반대 방향 휘두르기가 "되돌리는 손"으로 막힌다 (실측: 수첩 컷에서 멈춰야만 넘어감)
+    swipe = s.event && pointing ? { ...s.state, lastDirection: null } : s.state;
     if (s.event) events.push(s.event);
 
     const h = detectHold(shape, 'open', now, palm, HOLD.PALM_SHOW_MS);
     palm = h.state;
     if (h.fired) events.push({ type: 'PALM_SHOW', source: 'camera' });
 
-    // 손바닥 1초 유지 후에는 손을 펴고 있는 동안 매 프레임 위치를 보낸다 (손전등)
-    palmHold = detectHold(shape, 'open', now, palmHold, HOLD.PALM_HOLD_MS).state;
-    if (palmHold.fired && shape === 'open') {
-      events.push({ type: 'PALM_HOLD', ...palmPosition(sample.landmarks), source: 'camera' });
-    }
+    if (pointing) events.push({ type: 'PALM_HOLD', ...palmPosition(sample.landmarks), source: 'camera' });
 
     const u = detectHold(shape, 'thumb_up', now, thumb, HOLD.THUMB_UP_MS);
     thumb = u.state;

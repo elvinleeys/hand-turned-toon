@@ -45,7 +45,7 @@ function guide(scene: Scene, state: MachineState) {
       );
     case 'flashlight':
       return state.step === 1 ? (
-        <GuideButton gesture={scene.forward} label="다음으로 넘기세요" />
+        <GuideButton gesture={scene.forward[0]} label="손을 휘둘러 넘기세요" />
       ) : (
         <p className="flex items-center gap-3 rounded-full bg-white/10 px-4 py-2">
           <span className="text-2xl" aria-hidden>✋</span>

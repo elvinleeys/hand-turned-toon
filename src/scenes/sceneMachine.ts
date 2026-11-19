@@ -89,7 +89,7 @@ function onGesture(state: MachineState, scene: Scene, event: GestureEvent, at: n
       return state;
 
     case 'flashlight': {
-      if (state.step === 1) return event.type === scene.forward ? complete(state, scene, 1, at) : state;
+      if (state.step === 1) return scene.forward.includes(event.type) ? complete(state, scene, 1, at) : state;
       if (event.type !== 'PALM_HOLD') return state;
       const light = { x: event.x, y: event.y, at };
       // 컷은 2:3이라 세로 비율 차이를 보정해 가로 폭 기준 거리로 잰다

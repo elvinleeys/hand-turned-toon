@@ -42,7 +42,8 @@ export type Scene =
       /** 발견 반경 (컷 가로 폭 비율) */
       radius: number;
       dwellMs: number;
-      forward: GestureType;
+      /** 수첩 컷에서 넘기는 제스처들 (이전 컷이 없으니 양방향 휘두르기 모두 허용) */
+      forward: GestureType[];
     })
   /** FINGER_COUNT로 비밀번호 입력. cuts[0] = 잠김, cuts[1] = 열림. 오답 hintAfter번이면 hintCut 표시 */
   | (SceneBase & { kind: 'code'; answer: number[]; hintAfter: number; hintCut: Cut });

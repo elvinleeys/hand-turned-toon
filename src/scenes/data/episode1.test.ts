@@ -14,7 +14,7 @@ function neededGestures(scene: Scene) {
     case 'cuts':
       return [scene.forward, scene.back];
     case 'flashlight':
-      return ['PALM_HOLD' as const, scene.forward];
+      return ['PALM_HOLD' as const, ...scene.forward];
     case 'code':
       return ['FINGER_COUNT' as const];
     default:

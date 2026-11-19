@@ -75,7 +75,8 @@ export const episode1 = {
     S3: {
       kind: 'flashlight',
       hint: '손바닥을 펴서 1초 들고, 손을 움직여 비춰보세요',
-      forward: 'SWIPE_LEFT',
+      // 손전등으로 비추던 손이 어느 쪽으로 휘둘러져도 넘어가게 (실측: 왼쪽만 받으면 멈췄다 휘둘러야 했음)
+      forward: ['SWIPE_LEFT', 'SWIPE_RIGHT'],
       radius: 0.12,
       dwellMs: 500,
       next: 'S4',
