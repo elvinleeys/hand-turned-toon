@@ -20,5 +20,6 @@ export const PUNCH = {
   FIST_MAJORITY: 0.5,
   /** 창 안에 손이 잡힌 프레임이 이 개수 이상이어야 판정 */
   MIN_SAMPLES: 2,
-  COOLDOWN_MS: 600,
+  /** 실측: 연속 내지르기 간격이 약 0.6초라 600은 놓치고, 400 이하는 한 번을 두 번으로 센다 */
+  COOLDOWN_MS: 500,
 } as const;

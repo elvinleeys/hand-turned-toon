@@ -28,13 +28,15 @@ function windowSamples(history: FrameSample[], now: number): FrameSample[] {
   return history.filter((s) => s.t > now - PUNCH.WINDOW_MS && s.t <= now && s.landmarks.length === 21);
 }
 
-/** 창 안 최소 크기 대비 가장 최근 크기의 배율. 판정 불가면 0 */
+/** 창 안 기준 크기 대비 가장 최근 크기의 배율. 판정 불가면 0 */
 export function punchGrowth(history: FrameSample[], now: number, method: SizeMethod): number {
   const win = windowSamples(history, now);
   if (win.length < PUNCH.MIN_SAMPLES) return 0;
   const sizes = win.map((s) => handSize(s.landmarks, method));
-  const min = Math.min(...sizes);
-  return min > 0 ? sizes[sizes.length - 1] / min : 0;
+  // 한 프레임짜리 인식 오류(크기가 0에 가깝게 튐)를 무시하려고 최솟값 대신 두 번째로 작은 값을 쓴다
+  const sorted = [...sizes].sort((a, b) => a - b);
+  const base = sorted.length >= 3 ? sorted[1] : sorted[0];
+  return base > 0 ? sizes[sizes.length - 1] / base : 0;
 }
 
 export type PunchState = { lastFiredAt: number };

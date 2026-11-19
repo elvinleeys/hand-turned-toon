@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { INITIAL_PUNCH_STATE, SIZE_METHODS, detectPunch, handSize, type PunchState } from './punch';
 import type { FrameSample } from './types';
 import { FIST, OPEN, frame } from './__fixtures__/hands';
+import punch30 from './__fixtures__/punch-30-varied.json';
 
 /** 33ms(30fps) 간격 프레임을 하나씩 넣으며 PUNCH가 몇 번 나오는지 센다 */
 function run(frames: FrameSample[], method = SIZE_METHODS[0]) {
@@ -24,7 +25,7 @@ describe('detectPunch', () => {
     expect(run(seq(FIST, PUNCH_SCALES), method)).toBe(1);
   });
 
-  it('쿨다운(600ms) 안의 두 번째 내지르기는 무시, 이후는 인정', () => {
+  it('쿨다운 안의 두 번째 내지르기는 무시, 이후는 인정', () => {
     const back = [1.4, 1.2, 1, 1]; // 손을 빠르게 거둠
     const tooSoon = seq(FIST, [...PUNCH_SCALES, ...back, ...PUNCH_SCALES]);
     expect(run(tooSoon)).toBe(1);
@@ -43,6 +44,21 @@ describe('detectPunch', () => {
 
   it('주먹을 가까이 대고 가만히 있으면 PUNCH 아님', () => {
     expect(run(seq(FIST, Array(20).fill(1.5)))).toBe(0);
+  });
+
+  it('한 프레임만 크기가 0 가까이 튀는 인식 오류는 PUNCH 아님', () => {
+    const glitch = Array(20).fill(1.5);
+    glitch[10] = 0.02;
+    expect(run(seq(FIST, glitch))).toBe(0);
+  });
+});
+
+describe('실제 기록 재생', () => {
+  // 2026-11-19 노트북 웹캠, 다양한 자세로 30번 내지르기 (60fps, 28.5초)
+  const recording = punch30 as FrameSample[];
+
+  it('손등 폭 방식으로 정확히 30번', () => {
+    expect(run(recording, 'knuckle')).toBe(30);
   });
 });
 
