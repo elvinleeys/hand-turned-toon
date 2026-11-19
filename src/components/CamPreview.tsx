@@ -11,6 +11,10 @@ import { createCameraGestures } from '@/lib/vision/cameraGestures';
 const MODEL_TIMEOUT_MS = 10_000;
 /** 손이 이 시간 넘게 안 보이면 조명·대체 조작 안내 (PRD 9장) */
 const LOST_HINT_MS = 5_000;
+/** 손이 이 시간 넘게 안 보여야 "손 없음"으로 바꾼다 (프레임 단위 깜빡임 무시) */
+const SHOW_HOLD_MS = 300;
+/** 두 번째 손이 사라져도 이 시간 동안 "한 손만" 안내 유지 */
+const TWO_HANDS_HOLD_MS = 500;
 
 export default function CamPreview({ onFailure }: { onFailure: (message: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -20,6 +24,7 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
   const [twoHands, setTwoHands] = useState(false);
   const [lostLong, setLostLong] = useState(false);
   const lastHandAt = useRef<number | null>(null);
+  const lastTwoAt = useRef(-Infinity);
 
   const status = useHandTracking(videoRef, (sample, result) => {
     const video = videoRef.current;
@@ -37,11 +42,14 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
       drawing.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, { color: '#fbbf24', lineWidth: 4 });
       drawing.drawLandmarks(landmarks, { color: '#ffffff', radius: 4 });
     }
+    // 인식은 프레임마다 깜빡이므로, 표시 상태는 일정 시간 유지해 미리보기 문구·테두리가 흔들리지 않게 한다
     const seen = sample.landmarks.length > 0;
     if (seen || lastHandAt.current === null) lastHandAt.current = sample.t;
-    setHasHand(seen);
-    setTwoHands((sample.hands ?? 0) >= 2);
-    setLostLong(sample.t - lastHandAt.current > LOST_HINT_MS);
+    if ((sample.hands ?? 0) >= 2) lastTwoAt.current = sample.t;
+    const sinceHand = sample.t - lastHandAt.current;
+    setHasHand(sinceHand <= SHOW_HOLD_MS);
+    setTwoHands(sample.t - lastTwoAt.current <= TWO_HANDS_HOLD_MS);
+    setLostLong(sinceHand > LOST_HINT_MS);
     for (const event of detect(sample)) emit(event);
   });
 
@@ -67,7 +75,8 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
         <video ref={videoRef} className="block w-full" playsInline muted />
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       </div>
-      <figcaption className="bg-black/80 px-2 py-1 text-xs text-white" aria-live="polite">
+      {/* 문구 길이와 상관없이 높이를 고정해 영상이 위아래로 튀지 않게 한다 */}
+      <figcaption className="flex h-12 items-center overflow-hidden bg-black/80 px-2 text-xs leading-tight text-white" aria-live="polite">
         {status.kind !== 'running'
           ? describeStatus(status)
           : twoHands
