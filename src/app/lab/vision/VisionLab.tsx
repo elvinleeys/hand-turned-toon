@@ -6,14 +6,26 @@ import { DrawingUtils, GestureRecognizer } from '@mediapipe/tasks-vision';
 import { classifyCameraError, startCamera, stopCamera } from '@/lib/camera/camera';
 import { createRecognizer } from '@/lib/vision/recognizer';
 import { startFrameLoop } from '@/lib/vision/frameLoop';
+import { toFrameSample } from '@/lib/vision/toFrameSample';
+import { fingerRatios, geometricShape, handShape, thumbExtension } from '@/lib/gestures/shape';
 
-type Info = { gesture: string; score: number; hands: number; fps: number };
+type Info = {
+  gesture: string;
+  score: number;
+  hands: number;
+  fps: number;
+  geometric: string;
+  final: string;
+  ratios: string;
+  thumb: string;
+};
+const EMPTY: Info = { gesture: '-', score: 0, hands: 0, fps: 0, geometric: '-', final: '-', ratios: '-', thumb: '-' };
 
 export default function VisionLab() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState('카메라 준비 중…');
-  const [info, setInfo] = useState<Info>({ gesture: '-', score: 0, hands: 0, fps: 0 });
+  const [info, setInfo] = useState<Info>(EMPTY);
 
   useEffect(() => {
     const video = videoRef.current!;
@@ -67,8 +79,18 @@ export default function VisionLab() {
           frames = 0;
           fpsStart = now;
         }
-        const top = result.gestures[0]?.[0];
-        setInfo({ gesture: top?.categoryName ?? '-', score: top?.score ?? 0, hands: result.landmarks.length, fps });
+        const sample = toFrameSample(result, now);
+        const hasHand = sample.world.length === 21;
+        setInfo({
+          gesture: sample.canned ?? '-',
+          score: sample.cannedScore,
+          hands: result.landmarks.length,
+          fps,
+          geometric: geometricShape(sample.world, sample.landmarks) ?? '-',
+          final: handShape(sample) ?? '-',
+          ratios: hasHand ? fingerRatios(sample.world).map((r) => r.toFixed(2)).join(' / ') : '-',
+          thumb: hasHand ? thumbExtension(sample.world).toFixed(2) : '-',
+        });
       });
     })();
 
@@ -92,11 +114,18 @@ export default function VisionLab() {
       </div>
 
       <dl className="grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-4">
-        <div><dt className="opacity-60">분류</dt><dd>{info.gesture}</dd></div>
+        <div><dt className="opacity-60">기본 분류</dt><dd>{info.gesture}</dd></div>
         <div><dt className="opacity-60">점수</dt><dd>{info.score.toFixed(2)}</dd></div>
         <div><dt className="opacity-60">손 개수</dt><dd>{info.hands}</dd></div>
         <div><dt className="opacity-60">인식 FPS</dt><dd>{info.fps.toFixed(1)}</dd></div>
+        <div><dt className="opacity-60">좌표 판정</dt><dd>{info.geometric}</dd></div>
+        <div><dt className="opacity-60 font-bold">최종 모양</dt><dd className="font-bold">{info.final}</dd></div>
+        <div className="col-span-2"><dt className="opacity-60">손가락 비율 (검지/중지/약지/새끼)</dt><dd>{info.ratios}</dd></div>
+        <div><dt className="opacity-60">엄지 펴짐</dt><dd>{info.thumb}</dd></div>
       </dl>
+      <p className="text-sm opacity-60">
+        손가락 비율: 1.3 초과 = 펴짐, 1.0 미만 = 접힘. 엄지 펴짐: 0.6 초과 = 펴짐. (lib/gestures/config.ts)
+      </p>
       <p className="text-sm opacity-60">영상과 좌표는 이 브라우저 밖으로 전송되지 않습니다.</p>
     </main>
   );
