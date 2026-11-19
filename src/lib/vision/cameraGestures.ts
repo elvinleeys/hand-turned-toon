@@ -4,6 +4,7 @@ import { HOLD } from '@/lib/gestures/config';
 import { handShape } from '@/lib/gestures/shape';
 import { INITIAL_HOLD_STATE, detectHold, type HoldState } from '@/lib/gestures/hold';
 import { INITIAL_PUNCH_STATE, detectPunch, type PunchState } from '@/lib/gestures/punch';
+import { INITIAL_SWIPE_STATE, detectSwipe, type SwipeState } from '@/lib/gestures/swipe';
 
 const HISTORY_MS = 1000;
 
@@ -14,7 +15,9 @@ const HISTORY_MS = 1000;
 export function createCameraGestures() {
   const history: FrameSample[] = [];
   let punch: PunchState = INITIAL_PUNCH_STATE;
+  let swipe: SwipeState = INITIAL_SWIPE_STATE;
   let palm: HoldState = INITIAL_HOLD_STATE;
+  let thumb: HoldState = INITIAL_HOLD_STATE;
 
   return (sample: FrameSample): GestureEvent[] => {
     const now = sample.t;
@@ -28,9 +31,17 @@ export function createCameraGestures() {
     punch = p.state;
     if (p.event) events.push(p.event);
 
+    const s = detectSwipe(history, now, swipe);
+    swipe = s.state;
+    if (s.event) events.push(s.event);
+
     const h = detectHold(shape, 'open', now, palm, HOLD.PALM_SHOW_MS);
     palm = h.state;
     if (h.fired) events.push({ type: 'PALM_SHOW', source: 'camera' });
+
+    const u = detectHold(shape, 'thumb_up', now, thumb, HOLD.THUMB_UP_MS);
+    thumb = u.state;
+    if (u.fired) events.push({ type: 'THUMB_UP', source: 'camera' });
 
     return events;
   };

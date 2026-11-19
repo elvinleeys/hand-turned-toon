@@ -18,6 +18,16 @@ export const HOLD = {
   THUMB_UP_MS: 500,
 } as const;
 
+/** 손 휘두르기 (swipe.ts) */
+export const SWIPE = {
+  WINDOW_MS: 300,
+  /** 창 안에서 손목 x가 화면 폭의 이 비율 이상 이동 */
+  DISTANCE: 0.25,
+  MIN_SAMPLES: 3,
+  /** 한 번 휘두른 뒤 이 시간 동안은 모든 방향 무시 (손을 되돌리는 동작 무시) */
+  COOLDOWN_MS: 800,
+} as const;
+
 /** 주먹 내지르기 (punch.ts) */
 export const PUNCH = {
   /** 이 시간 안의 프레임만 본다 */

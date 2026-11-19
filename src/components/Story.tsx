@@ -1,12 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { subscribe } from '@/lib/events';
 import { attachKeyboard } from '@/lib/input/keyboard';
 import { episode1 } from '@/scenes/data/episode1';
 import { initialState, sceneReducer } from '@/scenes/sceneMachine';
+import { toResultQuery } from '@/scenes/resultQuery';
 import { RESULT, type Episode } from '@/scenes/types';
 import SceneView from './SceneView';
 
@@ -42,6 +43,7 @@ const modeFromUrl = (): Mode =>
   new URLSearchParams(window.location.search).get('mode') === 'camera' ? 'camera' : 'keyboard';
 
 export default function Story() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>(modeFromUrl);
   const [notice, setNotice] = useState<string | null>(null);
   const [state, dispatch] = useReducer(reduce, undefined, () => initialState(EPISODE, Date.now()));
@@ -63,16 +65,13 @@ export default function Story() {
     setMode('keyboard'); // CamPreview가 사라지면서 카메라가 정지된다
   }, []);
 
-  if (!scene) {
-    // shortcut: 결과 화면(/result)은 M3에서 만든다. 지금은 완주 확인용 표시만
-    return (
-      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-neutral-950 text-white">
-        <p className="text-2xl font-bold">끝까지 읽었어요!</p>
-        <p className="text-sm opacity-70">PUNCH {state.stats.punches}회 · 입력 {state.stats.sources.join(', ') || '-'}</p>
-        <Link href="/" className="underline">처음으로</Link>
-      </main>
-    );
-  }
+  // 결과 화면으로 (뒤로 가기 시 끝난 뷰어로 돌아오지 않도록 replace). 뷰어가 사라지면서 카메라도 정지된다
+  const finished = !scene;
+  useEffect(() => {
+    if (finished) router.replace(`/result?${toResultQuery(state.stats)}`);
+  }, [finished, router, state.stats]);
+
+  if (!scene) return <main className="min-h-dvh bg-neutral-950" />;
 
   return (
     <main className="flex min-h-dvh flex-col items-center gap-3 bg-neutral-950 px-4 py-4 text-white">

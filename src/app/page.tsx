@@ -34,6 +34,7 @@ export default function Home() {
       <nav className="flex gap-4 text-xs text-white/40">
         <Link href="/lab/vision" className="underline">lab: 손 인식</Link>
         <Link href="/lab/punch" className="underline">lab: PUNCH</Link>
+        <Link href="/lab/gestures" className="underline">lab: 전체 제스처</Link>
       </nav>
     </main>
   );

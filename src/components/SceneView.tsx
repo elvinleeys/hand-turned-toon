@@ -37,7 +37,9 @@ export default function SceneView({ scene, state }: { scene: Scene; state: Machi
   const index = scene.kind === 'single' ? 0 : Math.min(state.step, scene.cuts.length - 1);
   const cut = scene.cuts[index];
 
-  // 장면의 모든 컷을 겹쳐 두고 현재 컷만 보이게 한다 (이미지 교체 시 깜빡임 방지)
+  // 장면의 모든 컷을 미리 깔아 두고 현재 컷만 보이게 한다 (이미지 교체 시 깜빡임 방지).
+  // cuts 장면은 휘두른 방향으로 옆으로 밀리고, 나머지는 제자리에서 바뀐다 (문 3단계는 같은 구도).
+  const slide = scene.kind === 'cuts';
   const stack = (
     <div className="relative h-full w-full">
       {scene.cuts.map((c, i) => (
@@ -49,7 +51,12 @@ export default function SceneView({ scene, state }: { scene: Scene; state: Machi
           width={800}
           height={1200}
           priority
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-150 ${i === index ? 'opacity-100' : 'opacity-0'}`}
+          style={slide ? { transform: `translateX(${(i - index) * 100}%)` } : undefined}
+          className={`absolute inset-0 h-full w-full object-cover motion-reduce:transition-none ${
+            slide
+              ? 'transition-transform duration-300 ease-out'
+              : `transition-opacity duration-150 ${i === index ? 'opacity-100' : 'opacity-0'}`
+          }`}
         />
       ))}
     </div>
