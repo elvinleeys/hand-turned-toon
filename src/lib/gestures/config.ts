@@ -10,6 +10,14 @@ export const SHAPE = {
   THUMB_OUT_RATIO: 0.6,
 } as const;
 
+/** 손 모양 유지 (hold.ts) */
+export const HOLD = {
+  /** 이 시간 이하로 모양이 끊기면 유지 중으로 본다 (분류 깜빡임 허용) */
+  GAP_MS: 150,
+  PALM_SHOW_MS: 500,
+  THUMB_UP_MS: 500,
+} as const;
+
 /** 주먹 내지르기 (punch.ts) */
 export const PUNCH = {
   /** 이 시간 안의 프레임만 본다 */

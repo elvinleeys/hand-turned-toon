@@ -18,6 +18,8 @@ type SceneBase = {
   next: string;
   /** 장면 완료 후 다음 장면까지 기다리는 시간(ms). 없으면 바로 넘어간다 */
   doneDelayMs?: number;
+  /** 완료 연출 중 띄우는 문구 (예: "준비 완료!") */
+  doneText?: string;
 };
 
 export type Scene =

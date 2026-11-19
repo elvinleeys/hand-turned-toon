@@ -70,6 +70,14 @@ export function useHandTracking(
   return status;
 }
 
+const CAMERA_ERROR_TEXT: Record<ReturnType<typeof classifyCameraError>, string> = {
+  insecure: 'HTTPS 주소에서만 카메라를 쓸 수 있어요',
+  denied: '카메라 권한이 거부됐어요',
+  'not-found': '카메라를 찾을 수 없어요',
+  'in-use': '다른 앱이 카메라를 쓰고 있어요',
+  unknown: '카메라를 켜지 못했어요',
+};
+
 export function describeStatus(s: TrackingStatus): string {
   switch (s.kind) {
     case 'starting':
@@ -79,7 +87,7 @@ export function describeStatus(s: TrackingStatus): string {
     case 'running':
       return '인식 중';
     case 'camera-error':
-      return `카메라 오류: ${s.reason}`;
+      return CAMERA_ERROR_TEXT[s.reason];
     case 'model-error':
       return `모델 로딩 실패: ${s.message}`;
   }

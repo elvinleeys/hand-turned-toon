@@ -11,6 +11,7 @@ export const episode1 = {
       gesture: 'PALM_SHOW',
       hint: '손바닥을 보여주세요',
       doneDelayMs: 800,
+      doneText: '준비 완료!',
       next: 'S1',
       cuts: [
         {
