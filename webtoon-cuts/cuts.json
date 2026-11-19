@@ -1,0 +1,202 @@
+[
+  {
+    "id": "01",
+    "name": "01-intro",
+    "scene": "S0",
+    "src": "/cuts/01-intro.webp",
+    "alt": "지하 연구실 철문 앞에 선 하린. 휴대폰에 도윤의 메시지 \"문은 손으로 열어\"가 떠 있다.",
+    "gesture": "PALM_SHOW (0.5s)",
+    "keyboard": "H",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "02",
+    "name": "02-door-locked",
+    "scene": "S1",
+    "src": "/cuts/02-door-locked.webp",
+    "alt": "붉은 잠금등이 켜진 두꺼운 철문. 굳게 잠겨 있다.",
+    "gesture": "PUNCH",
+    "keyboard": "Space",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "03",
+    "name": "03-door-crack1",
+    "scene": "S1",
+    "src": "/cuts/03-door-crack1.webp",
+    "alt": "철문 가운데에 금이 갔다.",
+    "gesture": "PUNCH",
+    "keyboard": "Space",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "04",
+    "name": "04-door-crack2",
+    "scene": "S1",
+    "src": "/cuts/04-door-crack2.webp",
+    "alt": "금이 문 전체로 퍼지고 잠금장치가 깨졌다.",
+    "gesture": "PUNCH",
+    "keyboard": "Space",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "05",
+    "name": "05-door-broken",
+    "scene": "S1",
+    "src": "/cuts/05-door-broken.webp",
+    "alt": "철문이 부서져 열리고, 녹색 비상등이 켜진 복도가 보인다.",
+    "gesture": "- (1s 후 S2)",
+    "keyboard": "-",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "06",
+    "name": "06-hall-start",
+    "scene": "S2",
+    "src": "/cuts/06-hall-start.webp",
+    "alt": "녹색 비상등이 비추는 긴 복도. 바닥에 도윤의 사원증이 떨어져 있다.",
+    "gesture": "SWIPE_LEFT (RIGHT 무시)",
+    "keyboard": "←/→",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "07",
+    "name": "07-hall-arrows",
+    "scene": "S2",
+    "src": "/cuts/07-hall-arrows.webp",
+    "alt": "벽에 손바닥 그림과 왼쪽을 가리키는 화살표가 분필로 그려져 있다.",
+    "gesture": "SWIPE_LEFT / SWIPE_RIGHT",
+    "keyboard": "←/→",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "08",
+    "name": "08-hall-door",
+    "scene": "S2",
+    "src": "/cuts/08-hall-door.webp",
+    "alt": "복도 끝, 반쯤 열린 실험실 문. 안은 깜깜하다.",
+    "gesture": "SWIPE_LEFT → S3",
+    "keyboard": "←",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "09",
+    "name": "09-lab-lit",
+    "scene": "S3",
+    "src": "/cuts/09-lab-lit.webp",
+    "alt": "불 꺼진 실험실. 화이트보드, 실험대 위 비커, 벽의 달력에 손가락 그림 단서가 숨어 있다.",
+    "gesture": "PALM_HOLD (1s) + 손 좌표",
+    "keyboard": "H 길게 + 마우스",
+    "width": 800,
+    "height": 1200,
+    "clues": [
+      {
+        "id": "A",
+        "x": 0.2,
+        "y": 0.25,
+        "px": [
+          160,
+          300
+        ],
+        "fingers": 3,
+        "label": "첫째"
+      },
+      {
+        "id": "B",
+        "x": 0.55,
+        "y": 0.55,
+        "px": [
+          440,
+          660
+        ],
+        "fingers": 5,
+        "label": "둘째"
+      },
+      {
+        "id": "C",
+        "x": 0.8,
+        "y": 0.8,
+        "px": [
+          640,
+          960
+        ],
+        "fingers": 2,
+        "label": "셋째"
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "name": "10-lab-clues",
+    "scene": "S3",
+    "src": "/cuts/10-lab-clues.webp",
+    "alt": "하린의 수첩. 손가락 세 개, 다섯 개, 두 개를 편 손 그림이 순서대로 그려져 있다.",
+    "gesture": "SWIPE_LEFT → S4",
+    "keyboard": "←",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "11",
+    "name": "11-safe-locked",
+    "scene": "S4",
+    "src": "/cuts/11-safe-locked.webp",
+    "alt": "손바닥 모양 입력 패드와 빈칸 세 개가 있는 금고. 붉은 잠금등이 켜져 있다.",
+    "gesture": "FINGER_COUNT ×3 (각 0.7s)",
+    "keyboard": "1~5",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "12",
+    "name": "12-safe-open",
+    "scene": "S4",
+    "src": "/cuts/12-safe-open.webp",
+    "alt": "금고가 열리고 안에 접힌 메모 한 장이 놓여 있다.",
+    "gesture": "- (1s 후 S5)",
+    "keyboard": "-",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "13",
+    "name": "13-memo",
+    "scene": "S5",
+    "src": "/cuts/13-memo.webp",
+    "alt": "도윤의 손글씨 메모. 손짓만으로 여기까지 왔다면 실험은 성공이라고 적혀 있다.",
+    "gesture": "-",
+    "keyboard": "-",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "14",
+    "name": "14-thumbs-up",
+    "scene": "S5",
+    "src": "/cuts/14-thumbs-up.webp",
+    "alt": "천장의 카메라 렌즈에 초록불이 켜지고, 하린이 웃으며 올려다본다.",
+    "gesture": "THUMB_UP (0.5s)",
+    "keyboard": "Enter",
+    "width": 800,
+    "height": 1200
+  },
+  {
+    "id": "15",
+    "name": "15-result",
+    "scene": "RESULT",
+    "src": "/cuts/15-result.webp",
+    "alt": "연구실 밖 계단에서 하린과 도윤이 나란히 엄지를 들고 있다.",
+    "gesture": "클릭",
+    "keyboard": "클릭",
+    "width": 800,
+    "height": 1200
+  }
+]
