@@ -9,3 +9,16 @@ export const SHAPE = {
   /** 엄지 끝~검지 뿌리 거리 / 손바닥 길이(손목~중지 뿌리)가 이보다 크면 엄지가 펴진 것 */
   THUMB_OUT_RATIO: 0.6,
 } as const;
+
+/** 주먹 내지르기 (punch.ts) */
+export const PUNCH = {
+  /** 이 시간 안의 프레임만 본다 */
+  WINDOW_MS: 250,
+  /** 창 안 최소 크기 대비 현재 크기가 이 배율 이상이면 내지름 */
+  GROWTH: 1.3,
+  /** 창 안 프레임 중 주먹 비율이 이보다 커야 한다 (빠른 동작 중 분류 흔들림 허용) */
+  FIST_MAJORITY: 0.5,
+  /** 창 안에 손이 잡힌 프레임이 이 개수 이상이어야 판정 */
+  MIN_SAMPLES: 2,
+  COOLDOWN_MS: 600,
+} as const;

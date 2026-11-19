@@ -1,12 +1,9 @@
 'use client';
 
 // 개발용 테스트 페이지. 좌표를 직접 그리므로 components/가 아닌 app/lab 아래에 둔다 (CLAUDE.md 규칙 1).
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { DrawingUtils, GestureRecognizer } from '@mediapipe/tasks-vision';
-import { classifyCameraError, startCamera, stopCamera } from '@/lib/camera/camera';
-import { createRecognizer } from '@/lib/vision/recognizer';
-import { startFrameLoop } from '@/lib/vision/frameLoop';
-import { toFrameSample } from '@/lib/vision/toFrameSample';
+import { describeStatus, useHandTracking } from '@/lib/vision/useHandTracking';
 import { fingerRatios, geometricShape, handShape, thumbExtension } from '@/lib/gestures/shape';
 
 type Info = {
@@ -24,88 +21,48 @@ const EMPTY: Info = { gesture: '-', score: 0, hands: 0, fps: 0, geometric: '-', 
 export default function VisionLab() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [status, setStatus] = useState('카메라 준비 중…');
+  const fpsRef = useRef({ frames: 0, start: 0, fps: 0 });
   const [info, setInfo] = useState<Info>(EMPTY);
 
-  useEffect(() => {
+  const status = useHandTracking(videoRef, (sample, result) => {
     const video = videoRef.current!;
     const canvas = canvasRef.current!;
-    let cancelled = false;
-    let stream: MediaStream | undefined;
-    let recognizer: GestureRecognizer | undefined;
-    let stopLoop = () => {};
+    const ctx = canvas.getContext('2d')!;
+    if (canvas.width !== video.videoWidth) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const drawing = new DrawingUtils(ctx);
+    for (const landmarks of result.landmarks) {
+      drawing.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, { color: '#22d3ee', lineWidth: 3 });
+      drawing.drawLandmarks(landmarks, { color: '#f472b6', radius: 4 });
+    }
 
-    (async () => {
-      try {
-        const s = await startCamera(video);
-        if (cancelled) return stopCamera(s);
-        stream = s;
-      } catch (e) {
-        if (!cancelled) setStatus(`카메라 오류: ${classifyCameraError(e)}`);
-        return;
-      }
-
-      setStatus('모델 로딩 중…');
-      try {
-        const r = await createRecognizer();
-        if (cancelled) return r.close();
-        recognizer = r;
-      } catch (e) {
-        if (!cancelled) setStatus(`모델 로딩 실패: ${String(e)}`);
-        return;
-      }
-
-      setStatus('인식 중');
-      const ctx = canvas.getContext('2d')!;
-      const drawing = new DrawingUtils(ctx);
-      let frames = 0;
-      let fpsStart = performance.now();
-      let fps = 0;
-
-      stopLoop = startFrameLoop(video, recognizer, (result, now) => {
-        if (canvas.width !== video.videoWidth) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-        }
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (const landmarks of result.landmarks) {
-          drawing.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, { color: '#22d3ee', lineWidth: 3 });
-          drawing.drawLandmarks(landmarks, { color: '#f472b6', radius: 4 });
-        }
-
-        frames++;
-        if (now - fpsStart >= 1000) {
-          fps = (frames * 1000) / (now - fpsStart);
-          frames = 0;
-          fpsStart = now;
-        }
-        const sample = toFrameSample(result, now);
-        const hasHand = sample.world.length === 21;
-        setInfo({
-          gesture: sample.canned ?? '-',
-          score: sample.cannedScore,
-          hands: result.landmarks.length,
-          fps,
-          geometric: geometricShape(sample.world, sample.landmarks) ?? '-',
-          final: handShape(sample) ?? '-',
-          ratios: hasHand ? fingerRatios(sample.world).map((r) => r.toFixed(2)).join(' / ') : '-',
-          thumb: hasHand ? thumbExtension(sample.world).toFixed(2) : '-',
-        });
-      });
-    })();
-
-    return () => {
-      cancelled = true;
-      stopLoop();
-      recognizer?.close();
-      stopCamera(stream);
-    };
-  }, []);
+    const f = fpsRef.current;
+    f.frames++;
+    if (sample.t - f.start >= 1000) {
+      f.fps = (f.frames * 1000) / (sample.t - f.start);
+      f.frames = 0;
+      f.start = sample.t;
+    }
+    const hasHand = sample.world.length === 21;
+    setInfo({
+      gesture: sample.canned ?? '-',
+      score: sample.cannedScore,
+      hands: result.landmarks.length,
+      fps: f.fps,
+      geometric: geometricShape(sample.world, sample.landmarks) ?? '-',
+      final: handShape(sample) ?? '-',
+      ratios: hasHand ? fingerRatios(sample.world).map((r) => r.toFixed(2)).join(' / ') : '-',
+      thumb: hasHand ? thumbExtension(sample.world).toFixed(2) : '-',
+    });
+  });
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-4 p-4">
       <h1 className="text-xl font-bold">Lab · 손 랜드마크 확인</h1>
-      <p aria-live="polite">상태: {status}</p>
+      <p aria-live="polite">상태: {describeStatus(status)}</p>
 
       {/* 사용자 시점과 같도록 좌우 반전 */}
       <div className="relative w-full -scale-x-100 overflow-hidden rounded-lg bg-black">
