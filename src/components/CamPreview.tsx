@@ -9,12 +9,16 @@ import { describeStatus, useHandTracking } from '@/lib/vision/useHandTracking';
 import { createCameraGestures } from '@/lib/vision/cameraGestures';
 
 const MODEL_TIMEOUT_MS = 10_000;
+/** 손이 이 시간 넘게 안 보이면 조명·대체 조작 안내 (PRD 9장) */
+const LOST_HINT_MS = 5_000;
 
 export default function CamPreview({ onFailure }: { onFailure: (message: string) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [detect] = useState(createCameraGestures);
   const [hasHand, setHasHand] = useState(false);
+  const [lostLong, setLostLong] = useState(false);
+  const lastHandAt = useRef<number | null>(null);
 
   const status = useHandTracking(videoRef, (sample, result) => {
     const video = videoRef.current!;
@@ -30,7 +34,10 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
       drawing.drawConnectors(landmarks, GestureRecognizer.HAND_CONNECTIONS, { color: '#fbbf24', lineWidth: 4 });
       drawing.drawLandmarks(landmarks, { color: '#ffffff', radius: 4 });
     }
-    setHasHand(sample.landmarks.length > 0);
+    const seen = sample.landmarks.length > 0;
+    if (seen || lastHandAt.current === null) lastHandAt.current = sample.t;
+    setHasHand(seen);
+    setLostLong(sample.t - lastHandAt.current > LOST_HINT_MS);
     for (const event of detect(sample)) emit(event);
   });
 
@@ -57,7 +64,13 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
         <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       </div>
       <figcaption className="bg-black/80 px-2 py-1 text-xs text-white" aria-live="polite">
-        {status.kind === 'running' ? (hasHand ? '손 인식 중' : '손을 화면 안으로') : describeStatus(status)}
+        {status.kind !== 'running'
+          ? describeStatus(status)
+          : hasHand
+            ? '손 인식 중'
+            : lostLong
+              ? '손이 안 보여요. 밝은 곳에서 해보거나 아래 버튼·키보드를 써보세요'
+              : '손을 화면 안으로'}
       </figcaption>
     </figure>
   );

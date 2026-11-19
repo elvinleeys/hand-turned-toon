@@ -42,3 +42,7 @@ next-env.d.ts
 
 # 원본 손동작 기록 (테스트용 축소본은 src/lib/gestures/__fixtures__/)
 /test-record/
+
+# Playwright
+/test-results/
+/playwright-report/
