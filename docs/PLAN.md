@@ -264,11 +264,11 @@ flowchart LR
 
 ### M3 — 3주차 · MVP
 
-- [ ] SWIPE 판정 + S2 복도 장면
-- [ ] THUMB_UP 판정 + S5 엔딩 + 결과 화면
+- [x] SWIPE 판정 + S2 복도 장면
+- [x] THUMB_UP 판정 + S5 엔딩 + 결과 화면
 - [x] 키보드 대체 조작으로 처음부터 끝까지 통과 확인 (`npm run e2e`)
 - [x] 9장 예외 처리 (권한 거부, 카메라 없음, 로딩 실패, 건너뛰기)
-- [ ] Vercel 배포
+- [x] Vercel 배포 (https://hand-turned-toon.vercel.app, GitHub main push 시 자동 배포)
 - [ ] **관문:** 배포 링크에서 카메라·키보드 모드 모두 끝까지 동작
 
 ### M4 — 4주차 · 확장·정리
