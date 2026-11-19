@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { subscribe } from '@/lib/events';
 import { attachKeyboard } from '@/lib/input/keyboard';
@@ -38,13 +38,11 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
   );
 }
 
-/** ?mode=camera 이면 카메라, 그 밖에는 키보드 (브라우저 전용 컴포넌트라 window를 쓸 수 있다) */
-const modeFromUrl = (): Mode =>
-  new URLSearchParams(window.location.search).get('mode') === 'camera' ? 'camera' : 'keyboard';
-
 export default function Story() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>(modeFromUrl);
+  // ?mode=camera 이면 카메라, 그 밖에는 키보드. window.location은 화면 전환 중에 아직 이전 주소일 수 있어 쓰지 않는다
+  const initialMode: Mode = useSearchParams().get('mode') === 'camera' ? 'camera' : 'keyboard';
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [notice, setNotice] = useState<string | null>(null);
   const [state, dispatch] = useReducer(reduce, undefined, () => initialState(EPISODE, Date.now()));
   const scene = EPISODE.scenes[state.sceneId];

@@ -21,8 +21,10 @@ export default function CamPreview({ onFailure }: { onFailure: (message: string)
   const lastHandAt = useRef<number | null>(null);
 
   const status = useHandTracking(videoRef, (sample, result) => {
-    const video = videoRef.current!;
-    const canvas = canvasRef.current!;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    // 화면이 숨겨지거나(다른 페이지로 이동) 사라지는 순간에 마지막 프레임이 올 수 있다
+    if (!video || !canvas) return;
     const ctx = canvas.getContext('2d')!;
     if (canvas.width !== video.videoWidth) {
       canvas.width = video.videoWidth;

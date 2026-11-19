@@ -8,6 +8,29 @@ async function press(page: Page, key: string, times = 1) {
   }
 }
 
+/** 검사 없이 키보드·마우스로 결과 화면까지 빠르게 간다 */
+async function readToEndQuickly(page: Page) {
+  await expect(page.getByText('손바닥을 보여주세요')).toBeVisible();
+  await press(page, 'h');
+  await expect(page.getByText('문을 세게 쳐보세요 (0/3)')).toBeVisible();
+  await press(page, ' ', 3);
+  await expect(page.getByText('도윤 사원증…? 여길 지나갔구나.')).toBeVisible();
+  await press(page, 'ArrowLeft', 3);
+  const box = (await page.locator('.cursor-crosshair').boundingBox())!;
+  for (const [x, y] of [[0.2, 0.25], [0.55, 0.55], [0.8, 0.8]] as const) {
+    await page.mouse.move(box.x + box.width * x, box.y + box.height * y);
+    await page.waitForTimeout(800);
+  }
+  await press(page, 'ArrowLeft');
+  await press(page, '3');
+  await press(page, '5');
+  await press(page, '2');
+  await expect(page.getByText('다 읽었으면 손을 왼쪽으로 휘두르세요')).toBeVisible();
+  await press(page, 'ArrowLeft');
+  await press(page, 'Enter');
+  await page.waitForURL(/\/result\?/);
+}
+
 test('키보드만으로 처음부터 결과 화면까지 읽는다', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: /키보드로 읽기/ }).click();
@@ -55,6 +78,32 @@ test('키보드만으로 처음부터 결과 화면까지 읽는다', async ({ p
   await expect(page.getByText('키보드·클릭', { exact: true })).toBeVisible();
   await expect(page.getByText('3번', { exact: true })).toBeVisible();
   await expect(page.getByText('3 / 3', { exact: true })).toBeVisible();
+
+  // 다 읽은 뒤 다시 읽기: Next가 끝난 뷰어를 숨겨 보존하므로, 링크로 들어오면 처음부터 시작해야 한다
+  await page.getByRole('link', { name: '다시 보기' }).click();
+  await expect(page.getByText('1 / 7')).toBeVisible();
+  await press(page, 'h');
+  await expect(page.getByText('준비 완료!')).toBeVisible();
+  await expect(page).toHaveURL(/\/story\?mode=keyboard/);
+});
+
+test('결과 화면에서 처음으로 돌아가 다른 방식으로 다시 읽는다', async ({ page }) => {
+  // 카메라는 없는 것으로 (손으로 읽기를 고르면 안내 후 키보드 모드로 전환)
+  await page.addInitScript(() => {
+    navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('test', 'NotFoundError'));
+  });
+  await page.goto('/story?mode=keyboard');
+  await readToEndQuickly(page);
+
+  await page.getByRole('link', { name: '처음으로' }).click();
+  await page.getByRole('link', { name: /손으로 읽기/ }).click();
+  await expect(page).toHaveURL(/\/story\?mode=camera/);
+  await expect(page.getByText('1 / 7')).toBeVisible();
+  await expect(page.getByText('키보드·클릭 모드로 바꿨어요')).toBeVisible();
+
+  await page.goto('/');
+  await page.getByRole('link', { name: /키보드로 읽기/ }).click();
+  await expect(page.getByText('1 / 7')).toBeVisible();
 });
 
 test('키보드만으로 손전등을 쓴다 (H를 누른 채 방향키)', async ({ page }) => {

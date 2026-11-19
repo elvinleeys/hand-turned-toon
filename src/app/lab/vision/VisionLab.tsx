@@ -25,8 +25,9 @@ export default function VisionLab() {
   const [info, setInfo] = useState<Info>(EMPTY);
 
   const status = useHandTracking(videoRef, (sample, result) => {
-    const video = videoRef.current!;
-    const canvas = canvasRef.current!;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return; // 페이지를 떠나는 순간의 마지막 프레임
     const ctx = canvas.getContext('2d')!;
     if (canvas.width !== video.videoWidth) {
       canvas.width = video.videoWidth;
