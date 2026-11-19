@@ -145,6 +145,11 @@ export function sceneReducer(episode: Episode) {
   };
 }
 
+/** 에피소드 전체의 숨은 단서 수 */
+export function totalClues(episode: Episode): number {
+  return Object.values(episode.scenes).reduce((n, s) => n + (s.kind === 'flashlight' ? s.clues.length : 0), 0);
+}
+
 /** 지금 보여줄 컷 */
 export function currentCut(episode: Episode, state: MachineState): Cut | null {
   const scene = episode.scenes[state.sceneId];

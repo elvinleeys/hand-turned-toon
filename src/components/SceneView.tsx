@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useState } from 'react';
 import { emit } from '@/lib/events';
 import type { GestureType, Scene } from '@/scenes/types';
 import type { MachineState } from '@/scenes/sceneMachine';
@@ -56,7 +59,7 @@ function guide(scene: Scene, state: MachineState) {
         </p>
       );
     case 'code':
-      return <CodePad scene={scene} state={state} />;
+      return null; // 수첩 열기 상태가 필요해 SceneView에서 직접 그린다
     case 'counter':
       return <GuideButton gesture={scene.gesture} label={`${scene.hint} (${state.step}/${scene.count})`} />;
     case 'single':
@@ -64,8 +67,10 @@ function guide(scene: Scene, state: MachineState) {
   }
 }
 
-export default function SceneView({ scene, state }: { scene: Scene; state: MachineState }) {
+export default function SceneView({ scene, state, cluesTotal }: { scene: Scene; state: MachineState; cluesTotal: number }) {
   const done = state.phase === 'done';
+  // 금고: 단서를 다 못 찾은 사람이 수첩(비밀번호)을 크게 볼 수 있게. Story가 장면마다 key로 새로 그려 초기화된다
+  const [notebookOpen, setNotebookOpen] = useState(false);
   const index = scene.kind === 'single' ? 0 : Math.min(state.step, scene.cuts.length - 1);
   const cut = scene.cuts[index];
 
@@ -127,10 +132,38 @@ export default function SceneView({ scene, state }: { scene: Scene; state: Machi
             <p className="rounded-xl bg-amber-400 px-6 py-3 text-2xl font-bold text-black">{scene.doneText}</p>
           </div>
         )}
+
+        {scene.kind === 'code' && notebookOpen && !done && (
+          <div className="pop-in absolute inset-0 bg-black" role="dialog" aria-label="하린의 수첩">
+            <Image src={scene.hintCut.src} alt={scene.hintCut.alt} width={800} height={1200} className="h-full w-full object-cover" />
+            {scene.hintCut.lines?.map((line, i) => (
+              <p key={i} className="absolute inset-x-4 top-4 rounded-2xl bg-white/95 px-4 py-2 text-sm text-neutral-900 shadow sm:text-base">
+                <span className="mr-2 text-xs font-bold text-neutral-500">{line.who}</span>
+                {line.text}
+              </p>
+            ))}
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setNotebookOpen(false)}
+              className="absolute right-4 bottom-4 rounded-lg bg-amber-400 px-4 py-2 font-bold text-black hover:bg-amber-300"
+            >
+              닫고 입력하기
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 제스처 안내 */}
-      {!done && <div className="flex flex-wrap items-center justify-center gap-2 text-white">{guide(scene, state)}</div>}
+      {!done && (
+        <div className="flex flex-wrap items-center justify-center gap-2 text-white">
+          {scene.kind === 'code' ? (
+            <CodePad scene={scene} state={state} cluesTotal={cluesTotal} onOpenNotebook={() => setNotebookOpen(true)} />
+          ) : (
+            guide(scene, state)
+          )}
+        </div>
+      )}
     </div>
   );
 }

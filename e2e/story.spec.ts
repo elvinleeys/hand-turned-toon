@@ -61,7 +61,9 @@ test('키보드만으로 처음부터 결과 화면까지 읽는다', async ({ p
   await expect(page.getByText('셋, 다섯, 둘. 비밀번호야.')).toBeVisible();
   await press(page, 'ArrowLeft');
 
-  // S4 금고: 한 번 틀린 뒤 숫자키로 3-5-2
+  // S4 금고: 단서를 다 찾았으니 수첩 보기는 없다. 한 번 틀린 뒤 숫자키로 3-5-2
+  await expect(page.getByRole('button', { name: '손가락 1개' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /수첩 보기/ })).toBeHidden();
   await press(page, '1', 3);
   await expect(page.getByText('틀렸어요 (1번)')).toBeVisible();
   await press(page, '3');
@@ -104,6 +106,29 @@ test('결과 화면에서 처음으로 돌아가 다른 방식으로 다시 읽�
   await page.goto('/');
   await page.getByRole('link', { name: /키보드로 읽기/ }).click();
   await expect(page.getByText('1 / 7')).toBeVisible();
+});
+
+test('손전등을 건너뛰면 금고에서 수첩을 열어 비밀번호를 볼 수 있다', async ({ page }) => {
+  await page.goto('/story?mode=keyboard');
+  await expect(page.getByText('손바닥을 보여주세요')).toBeVisible();
+  await press(page, 'h');
+  await expect(page.getByText('문을 세게 쳐보세요 (0/3)')).toBeVisible();
+  await press(page, ' ', 3);
+  await expect(page.getByText('도윤 사원증…? 여길 지나갔구나.')).toBeVisible();
+  await press(page, 'ArrowLeft', 3);
+  await expect(page.getByText('단서 0 / 3')).toBeVisible();
+
+  await page.getByRole('button', { name: /건너뛰기/ }).click({ timeout: 20_000 }); // 15초 후 나타남
+  await page.getByRole('button', { name: /수첩 보기/ }).click();
+  const notebook = page.getByRole('dialog', { name: '하린의 수첩' });
+  await expect(notebook.getByText('셋, 다섯, 둘. 비밀번호야.')).toBeVisible();
+  await notebook.getByRole('button', { name: '닫고 입력하기' }).click();
+  await expect(notebook).toBeHidden();
+
+  await press(page, '3');
+  await press(page, '5');
+  await press(page, '2');
+  await expect(page.getByText('열렸다!')).toBeVisible();
 });
 
 test('키보드만으로 손전등을 쓴다 (H를 누른 채 방향키)', async ({ page }) => {

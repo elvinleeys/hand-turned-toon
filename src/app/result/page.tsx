@@ -2,14 +2,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { episode1, resultCut } from '@/scenes/data/episode1';
-import type { Scene } from '@/scenes/types';
+import { totalClues } from '@/scenes/sceneMachine';
 import { parseResultQuery } from '@/scenes/resultQuery';
 
 const SOURCE_LABEL = { camera: '손', keyboard: '키보드·클릭' } as const;
-const TOTAL_CLUES = Object.values(episode1.scenes as Record<string, Scene>).reduce(
-  (n, s) => n + (s.kind === 'flashlight' ? s.clues.length : 0),
-  0,
-);
+const TOTAL_CLUES = totalClues(episode1);
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);

@@ -8,7 +8,7 @@ import { soundsFor } from '@/scenes/sounds';
 import { subscribe } from '@/lib/events';
 import { attachKeyboard } from '@/lib/input/keyboard';
 import { episode1 } from '@/scenes/data/episode1';
-import { initialState, sceneReducer } from '@/scenes/sceneMachine';
+import { initialState, sceneReducer, totalClues } from '@/scenes/sceneMachine';
 import { toResultQuery } from '@/scenes/resultQuery';
 import { RESULT, type Episode } from '@/scenes/types';
 import SceneView from './SceneView';
@@ -18,6 +18,7 @@ const CamPreview = dynamic(() => import('./CamPreview'), { ssr: false });
 
 const EPISODE: Episode = episode1;
 const reduce = sceneReducer(EPISODE);
+const CLUES_TOTAL = totalClues(EPISODE);
 const SKIP_AFTER_MS = 15_000;
 
 /** 시작 장면부터 next를 따라간 장면 순서 (진행 표시용) */
@@ -122,7 +123,8 @@ export default function Story() {
         </div>
       )}
 
-      <SceneView scene={scene} state={state} />
+      {/* 장면마다 새로 그려 장면 안의 화면 상태(수첩 열림 등)를 초기화 */}
+      <SceneView key={state.sceneId} scene={scene} state={state} cluesTotal={CLUES_TOTAL} />
 
       {mode === 'camera' && <CamPreview onFailure={onCameraFailure} />}
     </main>
