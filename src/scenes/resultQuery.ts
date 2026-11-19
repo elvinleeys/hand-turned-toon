@@ -3,7 +3,7 @@ import type { Stats } from './sceneMachine';
 
 // 뷰어 → 결과 화면은 쿼리스트링으로 값을 넘긴다 (서버·저장소 없음). 영상·좌표는 포함하지 않는다.
 
-export type ResultData = { seconds: number; punches: number; sources: InputSource[]; skipped: number };
+export type ResultData = { seconds: number; punches: number; sources: InputSource[]; skipped: number; clues: number };
 
 export function toResultQuery(stats: Stats): string {
   const seconds = Math.round(((stats.finishedAt ?? stats.startedAt) - stats.startedAt) / 1000);
@@ -12,6 +12,7 @@ export function toResultQuery(stats: Stats): string {
     p: String(stats.punches),
     s: stats.sources.join(','),
     k: String(stats.skipped),
+    c: String(stats.clues),
   }).toString();
 }
 
@@ -29,5 +30,6 @@ export function parseResultQuery(q: Record<string, string | string[] | undefined
     punches: count(q.p, 9999),
     sources: SOURCES.filter((src) => s.split(',').includes(src)),
     skipped: count(q.k, 99),
+    clues: count(q.c, 99),
   };
 }

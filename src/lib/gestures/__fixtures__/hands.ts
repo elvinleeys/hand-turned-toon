@@ -21,6 +21,13 @@ export const TUCKED = p(-0.01, -0.08, -0.03);
 export const UP = p(-0.06, -0.16);
 export const SIDEWAYS = p(-0.12, -0.05);
 
+/** 엄지 상태와 손가락별(검지~새끼) 펴짐을 골라 만든 손 */
+export function handWith(thumbTip: Point, extended: [boolean, boolean, boolean, boolean]): Point[] {
+  const open = hand('extended', thumbTip);
+  const fist = hand('curled', thumbTip);
+  return open.map((pt, i) => (i >= 5 && !extended[Math.floor((i - 5) / 4)] ? fist[i] : pt));
+}
+
 export const FIST = hand('curled', TUCKED);
 export const OPEN = hand('extended', SIDEWAYS);
 

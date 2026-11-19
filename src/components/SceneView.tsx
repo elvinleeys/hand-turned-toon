@@ -2,7 +2,9 @@ import Image from 'next/image';
 import { emit } from '@/lib/events';
 import type { GestureType, Scene } from '@/scenes/types';
 import type { MachineState } from '@/scenes/sceneMachine';
+import CodePad from './CodePad';
 import DoorScene from './DoorScene';
+import FlashlightScene from './FlashlightScene';
 
 // 화면 안내: 제스처마다 아이콘 + 키보드 키 (PRD F-05: 안내를 눌러도 같은 이벤트)
 type SimpleGesture = 'PALM_SHOW' | 'PUNCH' | 'SWIPE_LEFT' | 'SWIPE_RIGHT' | 'THUMB_UP';
@@ -30,6 +32,36 @@ function GuideButton({ gesture, label }: { gesture: GestureType; label: string }
       <kbd className="rounded border border-white/30 px-1.5 text-xs">{g.key}</kbd>
     </button>
   );
+}
+
+function guide(scene: Scene, state: MachineState) {
+  switch (scene.kind) {
+    case 'cuts':
+      return (
+        <>
+          {scene.back && state.step > 0 && <GuideButton gesture={scene.back} label="이전 컷" />}
+          <GuideButton gesture={scene.forward} label={scene.hint} />
+        </>
+      );
+    case 'flashlight':
+      return state.step === 1 ? (
+        <GuideButton gesture={scene.forward} label="다음으로 넘기세요" />
+      ) : (
+        <p className="flex items-center gap-3 rounded-full bg-white/10 px-4 py-2">
+          <span className="text-2xl" aria-hidden>✋</span>
+          <span>{scene.hint}</span>
+          <span className="text-xs text-white/70">
+            <kbd className="rounded border border-white/30 px-1.5">H</kbd> 누른 채 방향키 · 마우스·터치
+          </span>
+        </p>
+      );
+    case 'code':
+      return <CodePad scene={scene} state={state} />;
+    case 'counter':
+      return <GuideButton gesture={scene.gesture} label={`${scene.hint} (${state.step}/${scene.count})`} />;
+    case 'single':
+      return <GuideButton gesture={scene.gesture} label={scene.hint} />;
+  }
 }
 
 export default function SceneView({ scene, state }: { scene: Scene; state: MachineState }) {
@@ -64,9 +96,19 @@ export default function SceneView({ scene, state }: { scene: Scene; state: Machi
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      {/* 세로 2:3 컷. 화면 높이에 맞춰 줄어든다 */}
-      <div className="relative aspect-[2/3] w-[min(92vw,calc((100dvh-11rem)*2/3))] overflow-hidden rounded-md shadow-2xl">
-        {scene.kind === 'counter' ? <DoorScene hits={state.step} broken={done}>{stack}</DoorScene> : stack}
+      {/* 세로 2:3 컷. 화면 높이에 맞춰 줄어든다 (금고는 아래 입력판 자리만큼 더 작게) */}
+      <div
+        className={`relative aspect-[2/3] overflow-hidden rounded-md shadow-2xl ${
+          scene.kind === 'code' ? 'w-[min(92vw,calc((100dvh-21rem)*2/3))]' : 'w-[min(92vw,calc((100dvh-11rem)*2/3))]'
+        }`}
+      >
+        {scene.kind === 'counter' ? (
+          <DoorScene hits={state.step} broken={done}>{stack}</DoorScene>
+        ) : scene.kind === 'flashlight' ? (
+          <FlashlightScene scene={scene} state={state}>{stack}</FlashlightScene>
+        ) : (
+          stack
+        )}
 
         {/* 대사는 그림 위쪽 빈 자리에 HTML로 */}
         {cut.lines && (
@@ -88,21 +130,7 @@ export default function SceneView({ scene, state }: { scene: Scene; state: Machi
       </div>
 
       {/* 제스처 안내 */}
-      {!done && (
-        <div className="flex flex-wrap items-center justify-center gap-2 text-white">
-          {scene.kind === 'cuts' ? (
-            <>
-              {scene.back && state.step > 0 && <GuideButton gesture={scene.back} label="이전 컷" />}
-              <GuideButton gesture={scene.forward} label={scene.hint} />
-            </>
-          ) : (
-            <GuideButton
-              gesture={scene.gesture}
-              label={scene.kind === 'counter' ? `${scene.hint} (${state.step}/${scene.count})` : scene.hint}
-            />
-          )}
-        </div>
-      )}
+      {!done && <div className="flex flex-wrap items-center justify-center gap-2 text-white">{guide(scene, state)}</div>}
     </div>
   );
 }

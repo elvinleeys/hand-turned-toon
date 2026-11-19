@@ -16,6 +16,22 @@ export const HOLD = {
   GAP_MS: 150,
   PALM_SHOW_MS: 500,
   THUMB_UP_MS: 500,
+  /** 손바닥을 이만큼 유지하면 손전등(PALM_HOLD) 시작 */
+  PALM_HOLD_MS: 1000,
+  /** 같은 손가락 개수를 이만큼 유지하면 FINGER_COUNT 확정 */
+  FINGER_COUNT_MS: 700,
+} as const;
+
+/** 손가락 개수 (fingers.ts) */
+export const FINGERS = {
+  /** 개수를 셀 때 엄지가 펴졌다고 보는 기준. 접은 엄지 실측값이 0.30~0.60이라 SHAPE.THUMB_OUT_RATIO(0.6)보다 높게 */
+  THUMB_COUNT_RATIO: 0.7,
+} as const;
+
+/** 손전등 (palmPosition) */
+export const FLASHLIGHT = {
+  /** 손 위치를 화면 가운데 기준으로 이 배율만큼 넓힌다. 카메라 가장자리까지 손을 뻗지 않아도 화면 구석에 닿게 */
+  GAIN: 1.4,
 } as const;
 
 /** 손 휘두르기 (swipe.ts) */

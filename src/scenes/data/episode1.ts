@@ -1,7 +1,13 @@
 import { RESULT, type Episode } from '../types';
 
-// 「잠긴 연구실」 MVP (S0 → S1 → S2 → S5). 콘티: webtoon.md, 그림: public/cuts/
-// S3(손전등)·S4(금고)는 M4에서 추가하고 S2의 next를 'S3'로 바꾼다.
+// 「잠긴 연구실」 S0 → S1 → S2 → S3 → S4 → S5 → S5_UP → 결과. 콘티: webtoon.md, 그림: public/cuts/
+// 단서 좌표는 webtoon-cuts/cuts.json의 09번 clues와 같아야 한다.
+
+const NOTEBOOK = {
+  src: '/cuts/10-lab-clues.webp',
+  alt: '하린의 수첩. 손가락 세 개, 다섯 개, 두 개를 편 손 그림이 순서대로 그려져 있다.',
+  lines: [{ who: '하린', text: '셋, 다섯, 둘. 비밀번호야.' }],
+};
 
 export const episode1 = {
   start: 'S0',
@@ -47,7 +53,7 @@ export const episode1 = {
       forward: 'SWIPE_LEFT',
       back: 'SWIPE_RIGHT',
       hint: '손을 왼쪽으로 휘둘러 넘기세요',
-      next: 'S5',
+      next: 'S3',
       cuts: [
         {
           src: '/cuts/06-hall-start.webp',
@@ -66,6 +72,45 @@ export const episode1 = {
         },
       ],
     },
+    S3: {
+      kind: 'flashlight',
+      hint: '손바닥을 펴서 1초 들고, 손을 움직여 비춰보세요',
+      forward: 'SWIPE_LEFT',
+      radius: 0.12,
+      dwellMs: 500,
+      next: 'S4',
+      clues: [
+        { id: 'A', x: 0.2, y: 0.25, label: '첫째' },
+        { id: 'B', x: 0.55, y: 0.55, label: '둘째' },
+        { id: 'C', x: 0.8, y: 0.8, label: '셋째' },
+      ],
+      cuts: [
+        {
+          src: '/cuts/09-lab-lit.webp',
+          alt: '불 꺼진 실험실. 화이트보드, 실험대 위 비커, 벽의 달력에 손가락 그림 단서가 숨어 있다.',
+          lines: [{ who: '하린', text: '손을 펴서 비춰보자.' }],
+        },
+        NOTEBOOK,
+      ],
+    },
+    S4: {
+      kind: 'code',
+      hint: '손가락 개수로 비밀번호를 입력하세요',
+      answer: [3, 5, 2],
+      hintAfter: 2,
+      hintCut: NOTEBOOK,
+      doneDelayMs: 1000,
+      doneText: '열렸다!',
+      next: 'S5',
+      cuts: [
+        {
+          src: '/cuts/11-safe-locked.webp',
+          alt: '손바닥 모양 입력 패드와 빈칸 세 개가 있는 금고. 붉은 잠금등이 켜져 있다.',
+          lines: [{ who: '금고', text: '손가락으로 입력하세요' }],
+        },
+        { src: '/cuts/12-safe-open.webp', alt: '금고가 열리고 안에 접힌 메모 한 장이 놓여 있다.' },
+      ],
+    },
     S5: {
       kind: 'cuts',
       forward: 'SWIPE_LEFT',
@@ -78,8 +123,7 @@ export const episode1 = {
           lines: [
             {
               who: '도윤(메모)',
-              // MVP 버전: 금고(S4) 문장 제외
-              text: '하린아, 여기까지 네 손으로 왔다면 실험은 성공이야. 문도, 복도도 전부 손짓으로만 열리게 만들었거든. 성공했으면 엄지 한 번 들어줘. 보고 있을게.',
+              text: '하린아, 여기까지 네 손으로 왔다면 실험은 성공이야. 문도, 복도도, 금고도 전부 손짓으로만 열리게 만들었거든. 성공했으면 엄지 한 번 들어줘. 보고 있을게.',
             },
           ],
         },

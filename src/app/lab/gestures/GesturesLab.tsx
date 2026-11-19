@@ -4,10 +4,11 @@
 import { useRef, useState } from 'react';
 import type { FrameSample } from '@/lib/gestures/types';
 import { handShape } from '@/lib/gestures/shape';
+import { countFingers } from '@/lib/gestures/fingers';
 import { createCameraGestures } from '@/lib/vision/cameraGestures';
 import { describeStatus, useHandTracking } from '@/lib/vision/useHandTracking';
 
-const TYPES = ['PALM_SHOW', 'PUNCH', 'SWIPE_LEFT', 'SWIPE_RIGHT', 'THUMB_UP'] as const;
+const TYPES = ['PALM_SHOW', 'PUNCH', 'SWIPE_LEFT', 'SWIPE_RIGHT', 'THUMB_UP', 'FINGER_COUNT', 'PALM_HOLD'] as const;
 
 export default function GesturesLab() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,14 +17,22 @@ export default function GesturesLab() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [log, setLog] = useState<string[]>([]);
   const [shape, setShape] = useState('-');
+  const [fingers, setFingers] = useState('-');
+  const [palm, setPalm] = useState('-');
   const [recording, setRecording] = useState(false);
 
   const status = useHandTracking(videoRef, (sample) => {
     recordRef.current?.push(sample);
     setShape(handShape(sample) ?? '-');
+    setFingers(countFingers(sample.world)?.toString() ?? '-');
     for (const e of detect(sample)) {
       setCounts((c) => ({ ...c, [e.type]: (c[e.type] ?? 0) + 1 }));
-      setLog((l) => [`${(sample.t / 1000).toFixed(1)}s ${e.type}`, ...l].slice(0, 12));
+      if (e.type === 'PALM_HOLD') {
+        setPalm(`${e.x.toFixed(2)}, ${e.y.toFixed(2)}`); // 매 프레임 나오므로 기록 대신 위치만
+        continue;
+      }
+      const detail = e.type === 'FINGER_COUNT' ? ` ${e.count}` : '';
+      setLog((l) => [`${(sample.t / 1000).toFixed(1)}s ${e.type}${detail}`, ...l].slice(0, 12));
     }
   });
 
@@ -47,14 +56,17 @@ export default function GesturesLab() {
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-4 p-4">
       <h1 className="text-xl font-bold">Lab · 전체 제스처</h1>
-      <p aria-live="polite">상태: {describeStatus(status)} · 현재 모양: <b>{shape}</b></p>
+      <p aria-live="polite">
+        상태: {describeStatus(status)} · 현재 모양: <b>{shape}</b> · 손가락 개수: <b>{fingers}</b> · 손전등 위치: <b>{palm}</b>
+      </p>
       <p className="text-sm opacity-70">
-        화면(거울)에서 손이 왼쪽으로 가면 SWIPE_LEFT, 오른쪽으로 가면 SWIPE_RIGHT가 나와야 합니다. 엄지 척 0.5초 유지 = THUMB_UP.
+        화면(거울)에서 손이 왼쪽으로 가면 SWIPE_LEFT, 오른쪽으로 가면 SWIPE_RIGHT. 엄지 척 0.5초 = THUMB_UP.
+        같은 손가락 개수 0.7초 = FINGER_COUNT. 손바닥 1초 유지 후 손을 움직이면 손전등 위치(화면 기준 0~1)가 따라 바뀝니다.
       </p>
       <div className="relative mx-auto w-full max-w-md -scale-x-100 overflow-hidden rounded-lg bg-black">
         <video ref={videoRef} className="block w-full" playsInline muted />
       </div>
-      <dl className="grid grid-cols-5 gap-2 text-center font-mono text-xs">
+      <dl className="grid grid-cols-4 gap-2 text-center font-mono text-xs sm:grid-cols-7">
         {TYPES.map((t) => (
           <div key={t} className="rounded border p-2">
             <dt className="opacity-60">{t}</dt>

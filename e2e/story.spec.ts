@@ -25,7 +25,27 @@ test('키보드만으로 처음부터 결과 화면까지 읽는다', async ({ p
   await expect(page.getByText('불이 다 꺼졌어.')).toBeVisible();
   await press(page, 'ArrowRight'); // 이전 컷 07
   await expect(page.getByText('손으로… 넘기라고?')).toBeVisible();
-  await press(page, 'ArrowLeft', 2); // 07 → 08 → S5 메모
+  await press(page, 'ArrowLeft', 2); // 07 → 08 → S3
+
+  // S3 손전등: 마우스로 단서 3곳을 차례로 비춘다 (멈춰 있어도 0.5초 머무름이 인정되는지)
+  await expect(page.getByText('단서 0 / 3')).toBeVisible();
+  const cut = page.locator('.cursor-crosshair');
+  const box = (await cut.boundingBox())!;
+  for (const [x, y, n] of [[0.2, 0.25, 1], [0.55, 0.55, 2], [0.8, 0.8, 3]] as const) {
+    await page.mouse.move(box.x + box.width * x, box.y + box.height * y);
+    if (n < 3) await expect(page.getByText(`단서 ${n} / 3`)).toBeVisible();
+  }
+  await expect(page.getByText('셋, 다섯, 둘. 비밀번호야.')).toBeVisible();
+  await press(page, 'ArrowLeft');
+
+  // S4 금고: 한 번 틀린 뒤 숫자키로 3-5-2
+  await press(page, '1', 3);
+  await expect(page.getByText('틀렸어요 (1번)')).toBeVisible();
+  await press(page, '3');
+  await press(page, '5');
+  await press(page, '2');
+  await expect(page.getByText('열렸다!')).toBeVisible();
+
   await expect(page.getByText('다 읽었으면 손을 왼쪽으로 휘두르세요')).toBeVisible();
   await press(page, 'ArrowLeft');
   await expect(page.getByText('엄지를 올려 대답하세요')).toBeVisible();
@@ -34,6 +54,30 @@ test('키보드만으로 처음부터 결과 화면까지 읽는다', async ({ p
   await page.waitForURL(/\/result\?/);
   await expect(page.getByText('키보드·클릭', { exact: true })).toBeVisible();
   await expect(page.getByText('3번', { exact: true })).toBeVisible();
+  await expect(page.getByText('3 / 3', { exact: true })).toBeVisible();
+});
+
+test('키보드만으로 손전등을 쓴다 (H를 누른 채 방향키)', async ({ page }) => {
+  await page.goto('/story?mode=keyboard');
+  await expect(page.getByText('손바닥을 보여주세요')).toBeVisible();
+  await press(page, 'h');
+  await page.waitForTimeout(900);
+  await press(page, ' ', 3);
+  await page.waitForTimeout(1200);
+  await press(page, 'ArrowLeft', 3);
+  await expect(page.getByText('단서 0 / 3')).toBeVisible();
+
+  // 가운데(0.5, 0.5)에서 0.04씩: 왼쪽 8번·위 6번 → 단서 A(0.2, 0.25) 근처
+  await page.keyboard.down('h');
+  for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowLeft');
+  for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowUp');
+  // 키를 누르고 있을 때의 반복 입력 대신, 같은 자리에서 위·아래를 번갈아 눌러 0.5초 이상 머문다
+  for (let i = 0; i < 8; i++) {
+    await page.keyboard.press(i % 2 ? 'ArrowUp' : 'ArrowDown');
+    await page.waitForTimeout(100);
+  }
+  await page.keyboard.up('h');
+  await expect(page.getByText('단서 1 / 3')).toBeVisible();
 });
 
 test('안내 버튼을 클릭해도 같은 동작을 한다', async ({ page }) => {

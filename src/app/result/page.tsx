@@ -1,10 +1,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { resultCut } from '@/scenes/data/episode1';
+import { episode1, resultCut } from '@/scenes/data/episode1';
+import type { Scene } from '@/scenes/types';
 import { parseResultQuery } from '@/scenes/resultQuery';
 
 const SOURCE_LABEL = { camera: '손', keyboard: '키보드·클릭' } as const;
+const TOTAL_CLUES = Object.values(episode1.scenes as Record<string, Scene>).reduce(
+  (n, s) => n + (s.kind === 'flashlight' ? s.clues.length : 0),
+  0,
+);
 
 function formatTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -19,6 +24,7 @@ async function Stats({ searchParams }: { searchParams: PageProps<'/result'>['sea
     ['걸린 시간', formatTime(r.seconds)],
     ['읽은 방법', r.sources.map((s) => SOURCE_LABEL[s]).join(' + ') || '-'],
     ['문을 친 횟수', `${r.punches}번`],
+    ['찾은 단서', `${r.clues} / ${TOTAL_CLUES}`],
     ...(r.skipped > 0 ? [['건너뛴 장면', `${r.skipped}개`]] : []),
   ];
   return (

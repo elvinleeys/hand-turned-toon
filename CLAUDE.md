@@ -58,7 +58,7 @@ src/
 | `PALM_SHOW` | 손바닥 보이기 (0.5초 유지) | H |
 | `PUNCH` | 주먹 내지르기 | Space |
 | `SWIPE_LEFT` / `SWIPE_RIGHT` | 손 휘두르기 | ← / → |
-| `PALM_HOLD` | 손바닥 1초 유지 + 손 위치 (확장) | H 길게 + 마우스 위치 |
+| `PALM_HOLD` | 손바닥 1초 유지 + 손 위치 (확장) | H 누른 채 방향키, 또는 마우스·터치 |
 | `FINGER_COUNT` | 손가락 개수 1~5 (확장) | 숫자키 1~5 |
 | `THUMB_UP` | 엄지 올리기 | Enter |
 
