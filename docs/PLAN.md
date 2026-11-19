@@ -256,7 +256,7 @@ flowchart LR
 
 ### M2 — 2주차 · 구조
 
-- [ ] `CLAUDE.md` 기준 폴더·계층 분리
+- [x] `CLAUDE.md` 기준 폴더·계층 분리
 - [ ] `GestureEvent` 타입과 이벤트 버스 구현 (`lib/events.ts`)
 - [ ] 키보드 입력 → 같은 이벤트 변환 (`lib/input`)
 - [ ] 장면 상태 머신 + 장면 데이터 (`scenes/`)

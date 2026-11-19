@@ -23,7 +23,7 @@
 → 장면 상태 머신(scenes/sceneMachine.ts) → 표현(components/)
 ```
 
-1. **장면 컴포넌트는 좌표를 모른다.** `components/`와 `scenes/`에서 MediaPipe 타입이나 랜드마크 좌표를 import하지 않는다. 오직 `GestureEvent`만 받는다.
+1. **장면 컴포넌트는 좌표를 모른다.** `components/`와 `scenes/`에서 MediaPipe 타입이나 랜드마크 좌표를 import하지 않는다. 오직 `GestureEvent`만 받는다. 예외는 손가락 점을 그리는 `components/CamPreview.tsx` 하나뿐이며, ESLint(`eslint.config.mjs`)가 이 규칙을 강제한다.
 2. **카메라 입력과 키보드 입력은 같은 `GestureEvent`를 만든다.** 새 제스처를 추가하면 `lib/input`의 키보드 대응도 반드시 함께 추가한다.
 3. **판정 로직은 순수 함수로 작성한다.** `lib/gestures/*.ts`는 "최근 프레임 기록 → `GestureEvent | null`"을 반환하고, DOM·전역 상태를 건드리지 않는다. 단위 테스트를 함께 작성한다.
 4. **장면은 데이터로 정의한다.** 장면 순서, 요구 제스처, 필요 횟수, 다음 장면은 `scenes/data/episode1.ts`에 둔다. 장면 추가를 위해 상태 머신 코드를 고치지 않는다.
