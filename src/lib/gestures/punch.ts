@@ -56,7 +56,12 @@ export function detectPunch(
   if (win.length < PUNCH.MIN_SAMPLES) return none;
   const fistRatio = win.filter((s) => handShape(s) === 'fist').length / win.length;
   if (fistRatio <= PUNCH.FIST_MAJORITY) return none;
+  // 끝 모양이 주먹이 아니면 손을 펴며 돌린 것 (손등 폭만 커짐)
+  const latest = win[win.length - 1];
+  if (handShape(latest) !== 'fist') return none;
+  if (handSize(latest.landmarks, method) < PUNCH.MIN_END_SIZE) return none;
   if (punchGrowth(history, now, method) < PUNCH.GROWTH) return none;
+  if (method !== 'bbox' && punchGrowth(history, now, 'bbox') < PUNCH.BBOX_GROWTH) return none;
 
   return { event: { type: 'PUNCH', source: 'camera' }, state: { lastFiredAt: now } };
 }
