@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // MediaPipe에서 복사한 빌드 산출물
+    "public/mediapipe/**",
   ]),
 ]);
 
