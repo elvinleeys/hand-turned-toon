@@ -9,16 +9,18 @@ webtoon-cuts/
 ├─ public/cuts/          ← 앱에서 바로 쓰는 WebP (800×1200). 프로젝트의 public/cuts/ 에 그대로 복사
 ├─ assets/png/           ← 원본 PNG 보관용 (800×1200)
 ├─ assets/svg/           ← 벡터 원본 (수정용, 크기 무관하게 선명)
-├─ cuts.json             ← 컷 메타데이터 (id, 장면, src, alt, 입력, 09번 단서 좌표)
+├─ cuts.json             ← 컷 메타데이터 원본 (앱은 이 파일을 읽지 않음. 아래 "적용 방법" 참고)
 ├─ tools/generator/      ← SVG를 다시 만드는 Python 스크립트 (선택)
 └─ README.md
 ```
 
-## 적용 방법 (Claude Code에 전달할 지시 예시)
+## 적용 방법
 
-> `webtoon-cuts/public/cuts/*.webp` 를 프로젝트 `public/cuts/` 로 복사하고,
-> `webtoon-cuts/cuts.json` 을 `src/data/cuts.json` 으로 옮겨서 컷 이미지의 `src`·`alt` 를 이 파일에서 읽도록 바꿔줘.
-> 09번 컷의 `clues` 좌표로 손전등 단서 판정을 구현해줘.
+앱의 장면·컷 데이터는 **`src/scenes/data/episode1.ts` 한 곳**에서 관리한다 (CLAUDE.md 규칙 4). `cuts.json`은 디자인 쪽 원본 기록이다.
+
+1. `webtoon-cuts/public/cuts/*.webp` 를 프로젝트 `public/cuts/` 로 복사한다 (같은 파일명이면 코드 수정 없이 그림만 교체됨).
+2. 컷의 `alt` 문구나 09번 `clues` 좌표가 바뀌었다면 `cuts.json`과 함께 `src/scenes/data/episode1.ts`의 해당 값도 고친다.
+3. `npm test`를 실행하면 `episode1.ts`의 이미지 경로가 `public/cuts/`에 실제로 있는지, `alt`가 비어 있지 않은지 확인한다.
 
 ## 반드시 지킬 규칙
 
