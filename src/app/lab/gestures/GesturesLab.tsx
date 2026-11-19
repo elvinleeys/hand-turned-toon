@@ -24,7 +24,7 @@ export default function GesturesLab() {
   const status = useHandTracking(videoRef, (sample) => {
     recordRef.current?.push(sample);
     setShape(handShape(sample) ?? '-');
-    setFingers(countFingers(sample.world)?.toString() ?? '-');
+    setFingers(countFingers(sample)?.toString() ?? '-');
     for (const e of detect(sample)) {
       setCounts((c) => ({ ...c, [e.type]: (c[e.type] ?? 0) + 1 }));
       if (e.type === 'PALM_HOLD') {

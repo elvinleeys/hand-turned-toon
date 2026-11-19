@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_STABLE_STATE, countFingers, detectStable, palmPosition, type StableState } from './fingers';
 import { FIST, OPEN, SIDEWAYS, TUCKED, handWith, p, toImage } from './__fixtures__/hands';
+import type { FrameSample, Point } from './types';
+
+/** 기본 분류가 None인 프레임 (좌표만으로 센다) */
+const sample = (world: Point[], canned: string | null = 'None'): FrameSample => ({
+  t: 0, canned, cannedScore: 0.8, world, landmarks: toImage(world),
+});
+
+// 손바닥을 펼 때처럼 엄지를 조금만 벌린 모양 (엄지 펴짐 약 0.37, 기준 0.7 미만)
+const SLIGHT = p(-0.06, -0.075);
 
 describe('countFingers', () => {
   it.each([
@@ -11,17 +20,27 @@ describe('countFingers', () => {
     ['다섯 손가락', OPEN, 5],
     ['엄지·검지·중지', handWith(SIDEWAYS, [true, true, false, false]), 3],
   ] as const)('%s → %i', (_, world, n) => {
-    expect(countFingers(world)).toBe(n);
+    expect(countFingers(sample(world))).toBe(n);
+  });
+
+  it('엄지를 조금만 벌린 손바닥: 기본 분류가 Open_Palm이면 5, 아니면 4', () => {
+    const palm = handWith(SLIGHT, [true, true, true, true]);
+    expect(countFingers(sample(palm, 'Open_Palm'))).toBe(5);
+    expect(countFingers(sample(palm, 'None'))).toBe(4);
+  });
+
+  it('Open_Palm이어도 접힌 손가락이 있으면 그 개수대로 (3에 영향 없음)', () => {
+    expect(countFingers(sample(handWith(SLIGHT, [true, true, true, false]), 'Open_Palm'))).toBe(3);
   });
 
   it('주먹(0개)은 null', () => {
-    expect(countFingers(FIST)).toBeNull();
+    expect(countFingers(sample(FIST))).toBeNull();
   });
 
   it('반쯤 굽힌 손가락이 있으면 애매하므로 null', () => {
     const world = handWith(TUCKED, [true, true, false, false]);
     world[12] = p(-0.01, -0.135); // 중지 끝을 둘째 마디 근처로 (비율 약 1.1)
-    expect(countFingers(world)).toBeNull();
+    expect(countFingers(sample(world))).toBeNull();
   });
 });
 

@@ -1,15 +1,20 @@
 import { FINGERS, FLASHLIGHT, HOLD, SHAPE } from './config';
 import { fingerRatios, thumbExtension } from './shape';
-import type { Point } from './types';
+import type { FrameSample, Point } from './types';
 
 export type FingerCount = 1 | 2 | 3 | 4 | 5;
 
 /** 펴진 손가락 수. 어느 손가락이든 펴짐·접힘이 애매하면 null (잘못 세는 것보다 기다리는 게 낫다) */
-export function countFingers(world: Point[]): FingerCount | null {
+export function countFingers(sample: FrameSample): FingerCount | null {
+  const { world } = sample;
   if (world.length < 21) return null;
   const ratios = fingerRatios(world);
   if (ratios.some((r) => r >= SHAPE.CURLED_RATIO && r <= SHAPE.EXTENDED_RATIO)) return null;
-  const n = ratios.filter((r) => r > SHAPE.EXTENDED_RATIO).length + (thumbExtension(world) > FINGERS.THUMB_COUNT_RATIO ? 1 : 0);
+  const fingers = ratios.filter((r) => r > SHAPE.EXTENDED_RATIO).length;
+  // 손바닥을 펴면 엄지가 엄지 척만큼 벌어지지 않아 기준(0.7)에 못 미친다 (실측: 5가 4로 나옴).
+  // 네 손가락이 다 펴졌고 기본 분류가 펼친 손이라고 하면 엄지도 편 것으로 본다
+  const thumb = thumbExtension(world) > FINGERS.THUMB_COUNT_RATIO || (fingers === 4 && sample.canned === 'Open_Palm');
+  const n = fingers + (thumb ? 1 : 0);
   return n >= 1 ? (n as FingerCount) : null;
 }
 

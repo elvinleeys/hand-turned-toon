@@ -60,7 +60,7 @@ export function createCameraGestures() {
     thumb = u.state;
     if (u.fired) events.push({ type: 'THUMB_UP', source: 'camera' });
 
-    const f = detectStable(countFingers(sample.world), now, fingers, HOLD.FINGER_COUNT_MS);
+    const f = detectStable(countFingers(sample), now, fingers, HOLD.FINGER_COUNT_MS);
     fingers = f.state;
     if (f.fired !== null) events.push({ type: 'FINGER_COUNT', count: f.fired as FingerCount, source: 'camera' });
 
